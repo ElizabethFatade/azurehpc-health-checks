@@ -4,23 +4,17 @@ source $(dirname "${BASH_SOURCE[0]}")/basic_tests.sh
 
 
 get_sad_path_conf(){
-    SKU=$( curl -H Metadata:true --max-time 10 -s "http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2021-01-01&format=text")
-    SKU="${SKU,,}"
-    if echo "$SKU" | grep -q "nd96asr_v4"; then
-        conf_name="nd96asr_v4"
-    elif echo "$SKU" | grep -q "nd96amsr_a100_v4"; then
-        conf_name="nd96amsr_a100_v4"
-    elif echo "$SKU" | grep -q "nd96isr_h100_v5"; then
-        conf_name="nd96isr_h100_v5"
-    elif echo "$SKU" | grep -q "hb176rs_v4"; then
-        conf_name="hb176rs_v4"
-    elif echo "$SKU" | grep -q "hx176rs"; then
-        conf_name="hx176rs"
+    SKU=$( curl -H Metadata:true --max-time 10 -s "http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2021-01-01&format=text" | tr '[:upper:]' '[:lower:]' | sed 's/standard_//')
+    CONF_DIR="$AZ_NHC_ROOT/conf/"
+    CONF_FILE="$CONF_DIR/$SKU.conf"
+    if [ -e "$CONF_FILE" ]; then
+        echo "Running health checks for Standard_$SKU SKU..."
     else
-        echo "Unit-test for this SKU $SKU is not supported" 
-        return 1
+        echo "The vm SKU 'standard_$SKU' is currently not supported by Azure health checks." | tee -a $OUTPUT_PATH
+        exit 0
     fi
-    relative_path="$(dirname "${BASH_SOURCE[0]}")/../bad_test_confs/$conf_name.conf"
+
+    relative_path="$(dirname "${BASH_SOURCE[0]}")/../bad_test_confs/$CONF_FILE"
     echo "$(realpath -m $relative_path)"
     return 0
 }
