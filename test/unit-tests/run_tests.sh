@@ -11,7 +11,7 @@ get_sad_path_conf(){
         echo "Running health checks for Standard_$SKU SKU..."
     else
         echo "The vm SKU 'standard_$SKU' is currently not supported by Azure health checks." | tee -a $OUTPUT_PATH
-        exit 0
+        return 1
     fi
 
     relative_path="$(dirname "${BASH_SOURCE[0]}")/../bad_test_confs/$CONF_FILE"
